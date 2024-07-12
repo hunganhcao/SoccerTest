@@ -11,7 +11,8 @@ public class GameController : MonoBehaviour
     [SerializeField] CameraMovement cam;
     private GameObject ballToShoot;
     private GameObject netToShoot;
-    private List<GameObject> ballsShooted;
+
+    private List<GameObject> ballsAutoShoot;
 
     private bool isShooting;
     private void Awake()
@@ -31,43 +32,58 @@ public class GameController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        ballsShooted = new List<GameObject>();
+      
+        ballsAutoShoot = new List<GameObject>();
+        ballsAutoShoot.AddRange(balls);
         isShooting=false;
     }
 
     private void CheckDistanceBall(bool isNear)
     {
         if (balls.Count <= 0) return;
-        float chooseDistance = Vector3.Distance(Player.position, balls[0].transform.position);
-        float distance = 0;
-        int chooseIndex = 0;
-        for (int i = 1; i < balls.Count; i++)
+        if (isNear)
         {
-            distance = Vector3.Distance(Player.position, balls[i].transform.position);
-            if (isNear)
+            float chooseDistance = Vector3.Distance(Player.position, balls[0].transform.position);
+            float distance = 0;
+            int chooseIndex = 0;
+            for (int i = 1; i < balls.Count; i++)
             {
+                distance = Vector3.Distance(Player.position, balls[i].transform.position);
+
                 if (distance < chooseDistance)
                 {
                     chooseDistance = distance;
                     chooseIndex = i;
                 }
+                ballToShoot = balls[chooseIndex];
             }
-            else
+        }
+        else
+        {
+            float chooseDistance = Vector3.Distance(Player.position, ballsAutoShoot[0].transform.position);
+            float distance = 0;
+            int chooseIndex = 0;
+            if (ballsAutoShoot.Count == 1)
             {
+                ballToShoot = ballsAutoShoot[chooseIndex];
+                return;
+            }
+            for (int i = 1; i < ballsAutoShoot.Count; i++)
+            {
+                distance = Vector3.Distance(Player.position, ballsAutoShoot[i].transform.position);
+
                 if (distance > chooseDistance)
                 {
                     chooseDistance = distance;
                     chooseIndex = i;
                 }
+                ballToShoot = ballsAutoShoot[chooseIndex];
+
             }
         }
-        ballToShoot = balls[chooseIndex];
-        //balls.Remove(ballToShoot);
-        //ballsShooted.Add(ballToShoot);
-        //if (balls.Count <= 0) { 
-        //    balls.AddRange(ballsShooted);
-        //    ballsShooted.Clear();
-        //}
+            
+        
+        
     
     }
     private void CheckDistanceNet()
@@ -88,7 +104,7 @@ public class GameController : MonoBehaviour
         bool isLeft = netToShoot == nets[0]?true:false;
         cam.MoveFollowBall(ballToShoot.transform,isLeft);
         yield return new WaitForSeconds(2f);
-        ballToShoot = null;
+       // ballToShoot = null;
         cam.BackFollowPlayer();
         
         isShooting = false;
@@ -108,6 +124,11 @@ public class GameController : MonoBehaviour
         CheckDistanceBall(false);
         CheckDistanceNet();
         StartCoroutine(DoShootBall());
+        ballsAutoShoot.Remove(ballToShoot);
+        if (ballsAutoShoot.Count <= 0)
+        {
+            ballsAutoShoot.AddRange(balls);
+        }
     }
 
 }

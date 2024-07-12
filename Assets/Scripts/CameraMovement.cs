@@ -33,7 +33,7 @@ public class CameraMovement : MonoBehaviour
     //coroutine anim ??
     public void MoveFollowBall(Transform target, bool left)
     {   
-        offsetBall.x = left ? offsetBall.x :-offsetBall.x;
+        offsetBall.x = left ? -5f :5f;
         transform.position= target.position+offsetBall;
         isFollowPlayer=false;
         MovementTarget = target;
